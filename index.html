@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -30,9 +30,22 @@
             aspect-ratio: 9 / 16;
             background-color: #000;
             overflow: hidden;
+            cursor: pointer; /* Курсор-вказівник для кліку по всьому екрану на старті */
         }
 
-        /* --- ШАР 1: ФОН (ВІДЕО) --- */
+        #video-overlay-img {
+            position: absolute;
+            top: 15%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            z-index: 2;        
+            pointer-events: none; 
+            opacity: 1;         
+        }
+
+        /* --- ШАР 1: ВІДЕО --- */
         #girl-video {
             position: absolute;
             top: 0;
@@ -57,7 +70,7 @@
 
         /* --- ШАР 3: СКРЕТЧ ЗОНА --- */
         #scratch-zone {
-            position: absolute;
+            position: relative;
             top: 65%; 
             left: 50%;
             transform: translate(-50%, -50%);
@@ -65,17 +78,6 @@
             height: 20%;
             aspect-ratio: 2.1 / 1; 
             z-index: 10;
-            cursor: pointer;
-        }
-
-        #scratch-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 12;
-            transition: opacity 0.4s ease;
         }
 
         .status-text-png {
@@ -90,14 +92,33 @@
             transition: opacity 0.6s ease;
         }
 
-        /* Сцена 1 */
-        #tap-to-start-png { z-index: 15; }
+        #scratch-to-claim-png { 
+            height: 28%;
+            width: auto;
+            z-index: 11; 
+            display: none; 
+            opacity: 1;
+        } 
+
+        #tap-to-start-png { 
+            z-index: 15; 
+        }
         
-        /* Рука повернута назад на Сцену 1 */
+        #scratch-canvas {
+            position: absolute;
+            top: 0; /* Виправлено з 10 на 0 для точного збігу меж */
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 12; 
+            transition: opacity 0.4s ease;
+        }
+
+        /* --- РУКА-ПОКАЖЧИК --- */
         #hand-pointer {
             position: absolute;
             top: 68%; 
-            left: 50%;
+            left: 45%;
             width: 65px;
             z-index: 20;
             pointer-events: none;
@@ -120,18 +141,10 @@
             }
         }
 
-        #scratch-to-claim-png { 
-            height: 18%;
-            width: auto;
-            z-index: 21; 
-            display: none; 
-            opacity: 1;
-        } 
-
         /* --- КОНТЕЙНЕР ПЕРА --- */
         #feather-container {
             position: fixed;
-            top: 83%; 
+            top: 73%; 
             left: 50%;
             transform: translate(-50%, -80%);           
             z-index: 22;
@@ -142,7 +155,7 @@
         }
 
         #feather {
-            width: 55%; 
+            width: 65%; 
             transform-origin: bottom center;
         }
 
@@ -165,13 +178,18 @@
         }
 
         #select-tool-text {
-            width: 190px;
-            margin-top: 12px;
-            transition: opacity 0.6s ease;
+            position: absolute;
+            bottom: 1%; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30%;
+            transition: opacity 0.4s ease; 
             opacity: 1;
+            z-index: 25;
+            pointer-events: none;
         }
 
-        /* --- ШАР 4: ЕНДКАРД --- */
+        /* --- ШАР 4: ЕНДКАРД (Зміщено донизу) --- */
         #end-card {
             position: absolute;
             top: 0;
@@ -181,15 +199,16 @@
             z-index: 30;
             display: none;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-end; /* Вирівнювання вмісту по нижньому краю */
             align-items: center;
+            padding-bottom: 20%;   
             background: rgba(0, 0, 0, 0.4);
         }
 
         #win-bubble {
             width: 85%;
             animation: bubblePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin-bottom: 30px;
+            margin-bottom: 5px;
         }
 
         @keyframes bubblePop {
@@ -201,6 +220,7 @@
             width: 70%;
             cursor: pointer;
             animation: pulse 1.5s infinite;
+            margin-bottom: 25px;
         }
 
         @keyframes pulse {
@@ -210,7 +230,10 @@
 
         #timer {
             color: #fff;
-            margin-top: 15px;
+            position: absolute;   
+            bottom: 5%;           
+            left: 50%;            
+            transform: translateX(-50%); 
             font-size: 1.1rem;
             font-weight: bold;
             text-shadow: 1px 1px 3px #000;
@@ -221,7 +244,7 @@
             top: 0;
             left: 0;
             pointer-events: none;
-            z-index: 25;
+            z-index: 45; 
         }
 
         @media (min-aspect-ratio: 9/16) {
@@ -271,19 +294,20 @@
 
     <div id="game-container">
         <video id="girl-video" src="assets/girl.mp4" preload="auto" loop muted playsinline></video>
+        <img id="video-overlay-img" src="assets/duarBlur.png" alt="Overlay">
         <img id="game-header" src="assets/header_title.png" alt="Header">
+        <img id="select-tool-text" src="assets/select_feather_tool.png" alt="Select Tool">
 
         <div id="scratch-zone">
+            <img id="scratch-to-claim-png" class="status-text-png" src="assets/scratch_to_claim.png" alt="Scratch to Claim">
             <img id="tap-to-start-png" class="status-text-png" src="assets/tap_to_start.png" alt="Tap To Start">
             <canvas id="scratch-canvas"></canvas>
-            <img id="scratch-to-claim-png" class="status-text-png" src="assets/scratch_to_claim.png" alt="Scratch to Claim">
         </div>
 
         <img id="hand-pointer" src="assets/hand_pointer.png" alt="Pointer Hand">
 
         <div id="feather-container">
             <img id="feather" class="feather-idle-animation" src="assets/feather.png" alt="feather">
-            <img id="select-tool-text" src="assets/select_feather_tool.png" alt="Select Tool">
         </div>
 
         <div id="end-card">
@@ -309,9 +333,9 @@
 
     <script>
         const config = {
-            requiredPercent: 65,  
-            brushSize: 4,       
-            timerDuration: 30,
+            requiredPercent: 35,  
+            brushSize: 30,    
+            timerDuration: 50,
             videoSpeed: 0.5,       
             musicVolume: 0.15,     
             btnImg1: 'assets/btn_read_now.png',
@@ -319,6 +343,7 @@
         };
 
         let state = 'SPLASH'; 
+        const gameContainer = document.getElementById('game-container');
         const girlVideo = document.getElementById('girl-video');
         const scratchZone = document.getElementById('scratch-zone');
         const canvas = document.getElementById('scratch-canvas');
@@ -338,7 +363,6 @@
         const ctaButton = document.getElementById('cta-button');
         const timerLabel = document.getElementById('timer');
 
-        // --- КНОПКА МУЗИКИ ---
         const musicToggle = document.getElementById('music-toggle');
         const iconSoundOn = document.getElementById('icon-sound-on');
         const iconSoundOff = document.getElementById('icon-sound-off');
@@ -347,7 +371,6 @@
         musicToggle.addEventListener('click', function(e) {
             e.stopPropagation();
             isMusicMuted = !isMusicMuted;
-
             bgMusic.muted = isMusicMuted;
             bgSound.muted = isMusicMuted;
 
@@ -380,8 +403,8 @@
             bgMusic.volume = config.musicVolume;
             girlVideo.playbackRate = config.videoSpeed;
 
-            scratchZone.addEventListener('mousedown', handleStart);
-            scratchZone.addEventListener('touchstart', handleStart, { passive: false });
+            gameContainer.addEventListener('mousedown', handleGlobalStart);
+            gameContainer.addEventListener('touchstart', handleGlobalStart, { passive: false });
             
             window.addEventListener('mousemove', handleMove);
             window.addEventListener('touchmove', handleMove, { passive: false });
@@ -390,38 +413,45 @@
             window.addEventListener('touchend', handleEnd);
         }
 
-        function handleStart(e) {
+        function handleGlobalStart(e) {
             if (state === 'SPLASH') {
                 e.preventDefault();
                 startScratchPhase();
                 return;
             }
+            
             if (state === 'SCRATCH') {
-                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 
-                scratchToClaimPng.style.opacity = '0'; 
-                selectToolText.style.opacity = '0'; 
-                
-                feather.classList.remove('feather-idle-animation');
-                feather.classList.add('feather-drawing-animation');
-                
-                featherContainer.style.transition = 'none';
+                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                    isDrawing = true;
+                    
+                    selectToolText.style.opacity = '0'; 
+                    
+                    feather.classList.remove('feather-idle-animation');
+                    feather.classList.add('feather-drawing-animation');
+                    featherContainer.style.transition = 'none';
 
-                updatePos(e);
+                    updatePos(e);
+                }
             }
         }
 
         function startScratchPhase() {
             state = 'SCRATCH';
+            gameContainer.style.cursor = 'default'; 
             
             girlVideo.style.filter = 'blur(0px)';
-            girlVideo.play().catch(err => console.log("Video forced play:", err));
+            girlVideo.play().catch(err => console.log("Video play error:", err));
             
-            bgSound.play().catch(err => console.log("Audio play:", err));
-            bgMusic.play().catch(err => console.log("Music play:", err));
+            bgSound.play().catch(err => console.log("Audio play error:", err));
+            bgMusic.play().catch(err => console.log("Music play error:", err));
             
             tapToStartPng.style.display = 'none';
             handPointer.style.display = 'none';
+            selectToolText.style.display = 'none';
             
             scratchToClaimPng.style.display = 'block'; 
             featherContainer.style.display = 'flex';
@@ -483,23 +513,6 @@
             featherContainer.style.top = clientY + 'px';
         }
 
-        function resetFeatherPosition() {
-            featherContainer.style.transition = 'top 0.4s ease, left 0.4s ease, transform 0.4s ease';
-            
-            featherContainer.style.position = 'absolute';
-            featherContainer.style.top = '73%';
-            featherContainer.style.left = '50%';
-            featherContainer.style.transform = 'translateX(-50%)';
-            
-            feather.classList.remove('feather-drawing-animation');
-            feather.classList.add('feather-idle-animation');
-            
-            setTimeout(() => {
-                if (scratchToClaimPng.style.opacity === '0') scratchToClaimPng.style.display = 'none';
-                if (selectToolText.style.opacity === '0') selectToolText.style.display = 'none';
-            }, 600);
-        }
-
         let shatterTriggered = false;
 
         function checkProgress() {
@@ -513,15 +526,11 @@
             
             const percent = (clear / (pixels.length / 40)) * 100;
 
-            if (!shatterTriggered && percent > 10) {
+            if (!shatterTriggered && percent > config.requiredPercent) {
                 shatterTriggered = true;
                 triggerShatter();
             }
         }
-
-        // ============================================================
-        // SHATTER — розбиваємо канвас на тайли і розліт з партіклами
-        // ============================================================
 
         function triggerShatter() {
             if (state === 'WIN') return;
@@ -529,7 +538,6 @@
 
             isDrawing = false;
             featherContainer.style.display = 'none';
-            scratchToClaimPng.style.display = 'none';
             bgMusic.pause();
 
             const snapshot = document.createElement('canvas');
@@ -538,6 +546,8 @@
             const sCtx = snapshot.getContext('2d');
             sCtx.drawImage(canvas, 0, 0);
 
+            document.getElementById('game-header').style.display = 'none';
+            scratchToClaimPng.style.display = 'none';
             canvas.style.display = 'none';
 
             const gameRect  = document.getElementById('game-container').getBoundingClientRect();
@@ -547,13 +557,11 @@
             const zoneW     = zoneRect.width;
             const zoneH     = zoneRect.height;
 
-            // Сітка тайлів
             const COLS = 8;
             const ROWS = 4;
             const tw = zoneW  / COLS;
             const th = zoneH  / ROWS;
 
-            // Particle-канвас поверх усього
             pCanvas.width  = gameRect.width;
             pCanvas.height = gameRect.height;
             pCanvas.style.zIndex = 40;
@@ -572,11 +580,9 @@
                         0, 0, tw, th
                     );
 
-                    // Стартова позиція центру тайлу відносно game-container
                     const startX = zoneLeft + c * tw + tw / 2;
                     const startY = zoneTop  + r * th + th / 2;
 
-                    // Вектор від центру зони — для розльоту
                     const cx = zoneLeft + zoneW / 2;
                     const cy = zoneTop  + zoneH / 2;
                     const dx = startX - cx;
@@ -597,7 +603,6 @@
                         h      : th,
                     });
 
-                    // Золоті іскри з кожного тайлу
                     const goldColors = ['#FFD700','#FFC200','#FFAA00','#FFF176','#FFE066'];
                     for (let k = 0; k < 5; k++) {
                         const angle = Math.random() * Math.PI * 2;
@@ -616,7 +621,6 @@
                 }
             }
 
-            // Кольорові конфеті зверху
             const confettiColors = ['#FF5252','#FF4081','#7C4DFF','#40C4FF','#69F0AE','#FFFF00'];
             for (let i = 0; i < 70; i++) {
                 particles.push({
@@ -632,7 +636,7 @@
             }
 
             let startTime = null;
-            const DURATION = 1000; // ms до показу end-card
+            const DURATION = 1000; 
 
             function animateShatter(ts) {
                 if (!startTime) startTime = ts;
@@ -641,11 +645,10 @@
 
                 pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
 
-                // Малюємо шматки
                 pieces.forEach(p => {
                     p.x    += p.vx;
                     p.y    += p.vy;
-                    p.vy   += 0.45;          // гравітація
+                    p.vy   += 0.45;          
                     p.vx   *= 0.98;
                     p.rot  += p.vrot;
                     p.alpha = Math.max(0, 1 - progress * 1.4);
@@ -658,7 +661,6 @@
                     pCtx.restore();
                 });
 
-                // Малюємо частинки
                 particles.forEach(p => {
                     p.x     += p.vx;
                     p.y     += p.vy;
@@ -671,7 +673,6 @@
                     pCtx.globalAlpha = p.alpha;
                     pCtx.fillStyle = p.color;
                     if (p.type === 'spark') {
-                        // Іскра — витягнутий прямокутник по напрямку руху
                         pCtx.translate(p.x, p.y);
                         pCtx.rotate(Math.atan2(p.vy, p.vx));
                         pCtx.fillRect(-p.size * 2, -p.size * 0.5, p.size * 4, p.size);
@@ -687,7 +688,6 @@
                     requestAnimationFrame(animateShatter);
                 } else {
                     pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-                    // Після анімації — показуємо end-card і запускаємо конфеті
                     endCard.style.display = 'flex';
                     particles = [];
                     startParticles();
@@ -697,8 +697,6 @@
 
             requestAnimationFrame(animateShatter);
         }
-
-        function win() { /* перенесено в triggerShatter */ }
 
         // --- ТАЙМЕР ---
         let timeLeft = config.timerDuration;
