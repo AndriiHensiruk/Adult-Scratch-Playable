@@ -237,6 +237,8 @@
             font-size: 1.1rem;
             font-weight: bold;
             text-shadow: 1px 1px 3px #000;
+            
+            /* ФІКС ПЕРЕНЕСЕННЯ ТЕКСТУ */
             white-space: nowrap;
             width: max-content;
         }
@@ -330,10 +332,10 @@
         </button>
     </div>
 
-    <audio id="bg-sound" src="assets/breathing.mp3" loop preload="auto"></audio>
-    <audio id="bg-music" src="assets/music.mp3" loop preload="auto"></audio>
-    <audio id="scratch-sound" src="assets/scratch.mp3" loop preload="auto"></audio>
-    <audio id="win-sound" src="assets/win.mp3" preload="auto"></audio>
+    <audio id="bg-sound" src="assets/breathing.mp3" loop preload="auto" muted></audio>
+    <audio id="bg-music" src="assets/music.mp3" loop preload="auto" muted></audio>
+    <audio id="scratch-sound" src="assets/scratch.mp3" loop preload="auto" muted></audio>
+    <audio id="win-sound" src="assets/win.mp3" preload="auto" muted></audio>
 
     <script>
         const config = {
@@ -365,7 +367,7 @@
         const bgSound = document.getElementById('bg-sound');
         const bgMusic = document.getElementById('bg-music');
         const scratchSound = document.getElementById('scratch-sound');
-        const winSound = document.getElementById('win-sound'); // Змінна звуку виграшу
+        const winSound = document.getElementById('win-sound'); 
         
         const endCard = document.getElementById('end-card');
         const ctaButton = document.getElementById('cta-button');
@@ -413,7 +415,7 @@
 
             bgMusic.volume = config.musicVolume;
             scratchSound.volume = config.scratchVolume;
-            winSound.volume = config.winVolume; // Задаємо початкову гучність виграшу
+            winSound.volume = config.winVolume; 
             girlVideo.playbackRate = config.videoSpeed;
 
             gameContainer.addEventListener('mousedown', handleGlobalStart);
@@ -459,6 +461,12 @@
             girlVideo.style.filter = 'blur(0px)';
             girlVideo.play().catch(err => console.log("Video play error:", err));
             
+            // --- МОБІЛЬНИЙ ФІКС: Програмне зняття Muted з аудіо-елементів ---
+            bgMusic.muted = isMusicMuted;
+            bgSound.muted = isMusicMuted;
+            scratchSound.muted = isMusicMuted;
+            winSound.muted = isMusicMuted;
+
             bgSound.play().catch(err => console.log("Audio play error:", err));
             bgMusic.play().catch(err => console.log("Music play error:", err));
             
