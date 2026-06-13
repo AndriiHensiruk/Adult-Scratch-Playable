@@ -399,11 +399,10 @@
         const musicToggle      = document.getElementById('music-toggle');
         const iconSoundOn      = document.getElementById('icon-sound-on');
         const iconSoundOff     = document.getElementById('icon-sound-off');
+        const duarBlur          = document.getElementById('video-overlay-img');
 
-        // --- Стан mute: за замовчуванням всі аудіо заглушені до першого тапу ---
         let isMusicMuted = false;
 
-        // Одразу заглушуємо програмно (атрибут muted прибрано з HTML)
         bgSound.muted    = true;
         bgMusic.muted    = true;
         scratchSound.muted = true;
@@ -493,11 +492,8 @@
             if (state !== 'SPLASH') return;
             e.preventDefault();
 
-            // 1. Розблокувати Web Audio API синхронно в gesture chain
             unlockAudioContext();
 
-            // 2. Muted trick: play з muted=true → одразу знімаємо mute
-            //    Це найнадійніший спосіб для Telegram/Viber WebView
             bgSound.muted = true;
             bgMusic.muted = true;
 
@@ -672,6 +668,7 @@
 
             document.getElementById('game-header').style.display = 'none';
             scratchToClaimPng.style.display = 'none';
+            duarBlur.style.display = 'none';
             canvas.style.display = 'none';
 
             const gameRect = document.getElementById('game-container').getBoundingClientRect();
