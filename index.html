@@ -32,6 +32,18 @@
             overflow: hidden;
         }
 
+        /* --- ШАР-ТРИГЕР НА ВЕСЬ ЕКРАН ДЛЯ ПЕРШОГО ТАПУ --- */
+        #splash-trigger {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100; /* Перекриває абсолютно все на старті */
+            cursor: pointer;
+            background: transparent; /* Невидимий */
+        }
+
         #video-overlay-img {
             position: absolute;
             top: 15%;
@@ -99,17 +111,9 @@
             opacity: 1;
         } 
 
-        /* --- НОВІ СТИЛІ ДЛЯ КНОПКИ СТАРТУ --- */
         #tap-to-start-png { 
             z-index: 15; 
-            pointer-events: auto; /* Дозволяємо кнопці приймати кліки */
-            cursor: pointer;
-            transition: transform 0.1s ease, opacity 0.6s ease;
-        }
-
-        /* Ефект делікатного притискання кнопки при тапі */
-        #tap-to-start-png:active {
-            transform: translate(-50%, -50%) scale(0.92);
+            pointer-events: none; /* Тепер клік ловить не сама картинка, а скрін-лейер */
         }
         
         #scratch-canvas {
@@ -266,7 +270,7 @@
             position: absolute;
             top: 14px;
             right: 14px;
-            z-index: 50;
+            z-index: 110; /* Ставимо вище за повноекранний тригер, щоб можна було вимкнути звук до старту гри */
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -303,6 +307,8 @@
 <body>
 
     <div id="game-container">
+        <div id="splash-trigger"></div>
+
         <video id="girl-video" src="assets/girl.mp4" preload="auto" loop muted playsinline></video>
         <img id="video-overlay-img" src="assets/duarBlur.png" alt="Overlay">
         <img id="game-header" src="assets/header_title.png" alt="Header">
@@ -358,6 +364,7 @@
 
         let state = 'SPLASH'; 
         const gameContainer = document.getElementById('game-container');
+        const splashTrigger = document.getElementById('splash-trigger');
         const girlVideo = document.getElementById('girl-video');
         const scratchZone = document.getElementById('scratch-zone');
         const canvas = document.getElementById('scratch-canvas');
@@ -424,11 +431,12 @@
             winSound.volume = config.winVolume; 
             girlVideo.playbackRate = config.videoSpeed;
 
-            // --- ЗМІНА ЛОГІКИ: Слухаємо клік ТІЛЬКИ на кнопці 'tapToStartPng' ---
-            tapToStartPng.addEventListener('mousedown', handleButtonStart);
-            tapToStartPng.addEventListener('touchstart', handleButtonStart, { passive: false });
+            // --- КЛІК НА ВСЬОМУ ЕКРАНІ ---
+            // Слухаємо повноекранний прозорий див
+            splashTrigger.addEventListener('mousedown', handleFullScreenStart);
+            splashTrigger.addEventListener('touchstart', handleFullScreenStart, { passive: false });
             
-            // Загальні скретч події залишаються на вікні/контейнері
+            // Звичайні скретч події
             gameContainer.addEventListener('mousedown', handleScratchStart);
             gameContainer.addEventListener('touchstart', handleScratchStart, { passive: false });
             
@@ -439,25 +447,27 @@
             window.addEventListener('touchend', handleEnd);
         }
 
-        // --- ФУНКЦІЯ СТАРТУ ЧЕРЕЗ КНОПКУ ---
-        function handleButtonStart(e) {
+        // --- ФУНКЦІЯ ХЕНДЛЕРУ ПОВНОЕКРАННОГО ТАПУ ---
+        function handleFullScreenStart(e) {
             if (state !== 'SPLASH') return;
             e.preventDefault();
-            e.stopPropagation(); // Запобігаємо подвійному спрацьовуванню
 
-            // Пряме і надійне розблокування звуків у момент фізичного тапу по кнопці
+            // Знімаємо заглушення
             bgMusic.muted = isMusicMuted;
             bgSound.muted = isMusicMuted;
             scratchSound.muted = isMusicMuted;
             winSound.muted = isMusicMuted;
 
+            // Запускаємо відтворення
             bgSound.play().catch(err => console.log("Audio play error:", err));
             bgMusic.play().catch(err => console.log("Music play error:", err));
+
+            // Повністю видаляємо тригер з DOM, щоб звільнити екран для скретчу
+            splashTrigger.remove();
 
             startScratchPhase();
         }
 
-        // Окрема логіка для малювання, яка ігнорує початковий екран SPLASH
         function handleScratchStart(e) {
             if (state !== 'SCRATCH') return;
             
@@ -589,7 +599,6 @@
             scratchSound.pause(); 
             isScratchSoundPlaying = false;
 
-            // ВМИКАЄМО ЗВУК ВИГРАШУ
             if (!isMusicMuted) {
                 winSound.play().catch(err => console.log("Win sound play error:", err));
             }
@@ -769,7 +778,7 @@
             }, 1000);
         }
 
-        // --- КОНФЕТІ (ендкард) ---
+        // --- КОНФЕТІ ---
         const pCanvas = document.getElementById('particle-canvas');
         const pCtx    = pCanvas.getContext('2d');
         let particles  = [];
