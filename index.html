@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -237,8 +237,6 @@
             font-size: 1.1rem;
             font-weight: bold;
             text-shadow: 1px 1px 3px #000;
-            
-            /* ФІКС ПЕРЕНЕСЕННЯ ТЕКСТУ */
             white-space: nowrap;
             width: max-content;
         }
@@ -418,6 +416,7 @@
             winSound.volume = config.winVolume; 
             girlVideo.playbackRate = config.videoSpeed;
 
+            // Навішуємо слухачі на весь контейнер
             gameContainer.addEventListener('mousedown', handleGlobalStart);
             gameContainer.addEventListener('touchstart', handleGlobalStart, { passive: false });
             
@@ -431,6 +430,15 @@
         function handleGlobalStart(e) {
             if (state === 'SPLASH') {
                 e.preventDefault();
+                
+                bgMusic.muted = isMusicMuted;
+                bgSound.muted = isMusicMuted;
+                scratchSound.muted = isMusicMuted;
+                winSound.muted = isMusicMuted;
+
+                bgSound.play().catch(err => console.log("Audio play error:", err));
+                bgMusic.play().catch(err => console.log("Music play error:", err));
+
                 startScratchPhase();
                 return;
             }
@@ -460,15 +468,6 @@
             
             girlVideo.style.filter = 'blur(0px)';
             girlVideo.play().catch(err => console.log("Video play error:", err));
-            
-            // --- МОБІЛЬНИЙ ФІКС: Програмне зняття Muted з аудіо-елементів ---
-            bgMusic.muted = isMusicMuted;
-            bgSound.muted = isMusicMuted;
-            scratchSound.muted = isMusicMuted;
-            winSound.muted = isMusicMuted;
-
-            bgSound.play().catch(err => console.log("Audio play error:", err));
-            bgMusic.play().catch(err => console.log("Music play error:", err));
             
             tapToStartPng.style.display = 'none';
             handPointer.style.display = 'none';
