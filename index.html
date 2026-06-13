@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -30,7 +30,6 @@
             aspect-ratio: 9 / 16;
             background-color: #000;
             overflow: hidden;
-            cursor: pointer;
         }
 
         #video-overlay-img {
@@ -100,8 +99,17 @@
             opacity: 1;
         } 
 
+        /* --- НОВІ СТИЛІ ДЛЯ КНОПКИ СТАРТУ --- */
         #tap-to-start-png { 
             z-index: 15; 
+            pointer-events: auto; /* Дозволяємо кнопці приймати кліки */
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.6s ease;
+        }
+
+        /* Ефект делікатного притискання кнопки при тапі */
+        #tap-to-start-png:active {
+            transform: translate(-50%, -50%) scale(0.92);
         }
         
         #scratch-canvas {
@@ -416,9 +424,13 @@
             winSound.volume = config.winVolume; 
             girlVideo.playbackRate = config.videoSpeed;
 
-            // Навішуємо слухачі на весь контейнер
-            gameContainer.addEventListener('mousedown', handleGlobalStart);
-            gameContainer.addEventListener('touchstart', handleGlobalStart, { passive: false });
+            // --- ЗМІНА ЛОГІКИ: Слухаємо клік ТІЛЬКИ на кнопці 'tapToStartPng' ---
+            tapToStartPng.addEventListener('mousedown', handleButtonStart);
+            tapToStartPng.addEventListener('touchstart', handleButtonStart, { passive: false });
+            
+            // Загальні скретч події залишаються на вікні/контейнері
+            gameContainer.addEventListener('mousedown', handleScratchStart);
+            gameContainer.addEventListener('touchstart', handleScratchStart, { passive: false });
             
             window.addEventListener('mousemove', handleMove);
             window.addEventListener('touchmove', handleMove, { passive: false });
@@ -427,38 +439,41 @@
             window.addEventListener('touchend', handleEnd);
         }
 
-        function handleGlobalStart(e) {
-            if (state === 'SPLASH') {
-                e.preventDefault();
-                
-                bgMusic.muted = isMusicMuted;
-                bgSound.muted = isMusicMuted;
-                scratchSound.muted = isMusicMuted;
-                winSound.muted = isMusicMuted;
+        // --- ФУНКЦІЯ СТАРТУ ЧЕРЕЗ КНОПКУ ---
+        function handleButtonStart(e) {
+            if (state !== 'SPLASH') return;
+            e.preventDefault();
+            e.stopPropagation(); // Запобігаємо подвійному спрацьовуванню
 
-                bgSound.play().catch(err => console.log("Audio play error:", err));
-                bgMusic.play().catch(err => console.log("Music play error:", err));
+            // Пряме і надійне розблокування звуків у момент фізичного тапу по кнопці
+            bgMusic.muted = isMusicMuted;
+            bgSound.muted = isMusicMuted;
+            scratchSound.muted = isMusicMuted;
+            winSound.muted = isMusicMuted;
 
-                startScratchPhase();
-                return;
-            }
+            bgSound.play().catch(err => console.log("Audio play error:", err));
+            bgMusic.play().catch(err => console.log("Music play error:", err));
+
+            startScratchPhase();
+        }
+
+        // Окрема логіка для малювання, яка ігнорує початковий екран SPLASH
+        function handleScratchStart(e) {
+            if (state !== 'SCRATCH') return;
             
-            if (state === 'SCRATCH') {
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                isDrawing = true;
+                selectToolText.style.opacity = '0'; 
                 
-                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
-                    isDrawing = true;
-                    
-                    selectToolText.style.opacity = '0'; 
-                    
-                    feather.classList.remove('feather-idle-animation');
-                    feather.classList.add('feather-drawing-animation');
-                    featherContainer.style.transition = 'none';
+                feather.classList.remove('feather-idle-animation');
+                feather.classList.add('feather-drawing-animation');
+                featherContainer.style.transition = 'none';
 
-                    updatePos(e);
-                }
+                updatePos(e);
             }
         }
 
@@ -773,7 +788,7 @@
                     size  : Math.random() * 4 + 2,
                     color : `hsl(${Math.random() * 360}, 100%, 60%)`,
                     alpha : 1,
-                    type  : 'confetti'
+                    type: 'confetti'
                 });
             }
             requestAnimationFrame(updateParticles);
