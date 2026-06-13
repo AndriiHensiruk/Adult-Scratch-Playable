@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -30,7 +30,7 @@
             aspect-ratio: 9 / 16;
             background-color: #000;
             overflow: hidden;
-            cursor: pointer; /* Курсор-вказівник для кліку по всьому екрану на старті */
+            cursor: pointer;
         }
 
         #video-overlay-img {
@@ -106,7 +106,7 @@
         
         #scratch-canvas {
             position: absolute;
-            top: 0; /* Виправлено з 10 на 0 для точного збігу меж */
+            top: 0;
             left: 0;
             width: 100%;
             height: 100%;
@@ -189,7 +189,7 @@
             pointer-events: none;
         }
 
-        /* --- ШАР 4: ЕНДКАРД (Зміщено донизу) --- */
+        /* --- ШАР 4: ЕНДКАРД --- */
         #end-card {
             position: absolute;
             top: 0;
@@ -199,7 +199,7 @@
             z-index: 30;
             display: none;
             flex-direction: column;
-            justify-content: flex-end; /* Вирівнювання вмісту по нижньому краю */
+            justify-content: flex-end;
             align-items: center;
             padding-bottom: 20%;   
             background: rgba(0, 0, 0, 0.4);
@@ -330,6 +330,8 @@
 
     <audio id="bg-sound" src="assets/breathing.mp3" loop preload="auto"></audio>
     <audio id="bg-music" src="assets/music.mp3" loop preload="auto"></audio>
+    <audio id="scratch-sound" src="assets/scratch.mp3" loop preload="auto"></audio>
+    <audio id="win-sound" src="assets/win.mp3" preload="auto"></audio>
 
     <script>
         const config = {
@@ -337,7 +339,9 @@
             brushSize: 30,    
             timerDuration: 50,
             videoSpeed: 0.5,       
-            musicVolume: 0.15,     
+            musicVolume: 0.15,
+            scratchVolume: 0.4,
+            winVolume: 0.8,     
             btnImg1: 'assets/btn_read_now.png',
             btnImg2: 'assets/btn_watch_now.png'
         };
@@ -358,6 +362,8 @@
         const selectToolText = document.getElementById('select-tool-text');
         const bgSound = document.getElementById('bg-sound');
         const bgMusic = document.getElementById('bg-music');
+        const scratchSound = document.getElementById('scratch-sound');
+        const winSound = document.getElementById('win-sound'); // Змінна звуку виграшу
         
         const endCard = document.getElementById('end-card');
         const ctaButton = document.getElementById('cta-button');
@@ -373,6 +379,8 @@
             isMusicMuted = !isMusicMuted;
             bgMusic.muted = isMusicMuted;
             bgSound.muted = isMusicMuted;
+            scratchSound.muted = isMusicMuted;
+            winSound.muted = isMusicMuted; 
 
             if (isMusicMuted) {
                 musicToggle.classList.add('muted');
@@ -387,6 +395,7 @@
 
         let isDrawing = false;
         let lastX, lastY;
+        let isScratchSoundPlaying = false;
         
         let cardTexture = new Image();
         cardTexture.src = 'assets/gold_rectangle.png'; 
@@ -401,6 +410,8 @@
             ctx.drawImage(cardTexture, 0, 0, canvas.width, canvas.height);
 
             bgMusic.volume = config.musicVolume;
+            scratchSound.volume = config.scratchVolume;
+            winSound.volume = config.winVolume; // Задаємо початкову гучність виграшу
             girlVideo.playbackRate = config.videoSpeed;
 
             gameContainer.addEventListener('mousedown', handleGlobalStart);
@@ -479,6 +490,11 @@
 
             moveFeather(clientX, clientY);
 
+            if (!isScratchSoundPlaying && !isMusicMuted) {
+                scratchSound.play().catch(err => console.log("Scratch sound play error:", err));
+                isScratchSoundPlaying = true;
+            }
+
             ctx.globalCompositeOperation = 'destination-out';
             ctx.lineWidth = config.brushSize;
             ctx.lineCap = 'round';
@@ -495,6 +511,12 @@
 
         function handleEnd() {
             if (state !== 'SCRATCH') return;
+            
+            if (isScratchSoundPlaying) {
+                scratchSound.pause();
+                isScratchSoundPlaying = false;
+            }
+
             if (isDrawing) {
                 isDrawing = false;
                 
@@ -539,6 +561,14 @@
             isDrawing = false;
             featherContainer.style.display = 'none';
             bgMusic.pause();
+            bgSound.pause();
+            scratchSound.pause(); 
+            isScratchSoundPlaying = false;
+
+            // ВМИКАЄМО ЗВУК ВИГРАШУ
+            if (!isMusicMuted) {
+                winSound.play().catch(err => console.log("Win sound play error:", err));
+            }
 
             const snapshot = document.createElement('canvas');
             snapshot.width  = canvas.width;
