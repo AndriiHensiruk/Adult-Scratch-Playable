@@ -25,12 +25,10 @@
 
         #game-container {
             position: relative;
-            /* На мобільному — повна ширина з обмеженням по висоті */
             width: min(100vw, calc(100vh * 9 / 16));
             height: min(100vh, calc(100vw * 16 / 9));
             background-color: #000;
             overflow: hidden;
-            /* Центруємо по обидва боки */
             flex-shrink: 0;
         }
 
@@ -129,16 +127,14 @@
             height: 100%;
             z-index: 12;
             transition: opacity 0.4s ease;
-            /* Курсор-олівець на десктопі */
             cursor: crosshair;
         }
 
         #hand-pointer {
             position: absolute;
-            /* Позиціонуємо відносно game-container */
-            top: 68%;
+            top: 64%;
             left: 45%;
-            width: 6.5%;   /* % від ширини контейнера замість px */
+            width: 20.5%;  
             min-width: 40px;
             max-width: 80px;
             z-index: 20;
@@ -149,16 +145,15 @@
 
         @keyframes scratchAndTap {
             0%, 100% { transform: translateY(90%) translateX(0) scale(1) rotate(0deg); }
-            25%       { transform: translateY(35%) translateX(4px) scale(0.9) rotate(5deg); }
+            25%       { transform: translateY(35%) translateX(6px) scale(0.9) rotate(5deg); }
             50%       { transform: translateY(50%) translateX(0) scale(1) rotate(0deg); }
             75%       { transform: translateY(95%) translateX(4px) scale(0.9) rotate(0deg); }
         }
 
-        /* Feather — позиція відносно game-container (не fixed!) */
+        /* Feather  */
         #feather-container {
             position: absolute;
-            /* Стартова позиція — центр scratch-zone */
-            top: 73%;
+            top: 89%;
             left: 50%;
             transform: translate(-50%, -80%);
             z-index: 22;
@@ -166,7 +161,6 @@
             pointer-events: none;
             flex-direction: column;
             align-items: center;
-            /* Відключаємо перехід за замовчуванням */
             will-change: left, top;
         }
 
@@ -301,9 +295,7 @@
             opacity: 0.45;
         }
 
-        /* =============================================
-           ДЕСКТОП: бічні смуги з підказкою "click to play"
-           ============================================= */
+
         #desktop-hint {
             display: none;
             position: fixed;
@@ -390,8 +382,8 @@
 
     <script>
         const config = {
-            requiredPercent : 35,
-            brushSize       : 30,
+            requiredPercent : 45,
+            brushSize       : 20,
             timerDuration   : 59,
             videoSpeed      : 0.5,
             musicVolume     : 0.15,
@@ -447,13 +439,11 @@
         let particles = [];
         let shatterTriggered = false;
 
-        // --- Заглушаємо всі аудіо до першого тапу ---
         bgSound.muted     = true;
         bgMusic.muted     = true;
         scratchSound.muted = true;
         winSound.muted    = true;
 
-        // --- Мʼют-тогл ---
         musicToggle.addEventListener('click', function(e) {
             e.stopPropagation();
             isMusicMuted = !isMusicMuted;
@@ -468,7 +458,6 @@
             iconSoundOff.style.display = isMusicMuted ? 'block' : 'none';
         });
 
-        // --- Завантаження текстури карточки ---
         let cardTexture = new Image();
         cardTexture.src = 'assets/gold_rectangle.png';
         cardTexture.onload = init;
@@ -486,7 +475,6 @@
             splashTrigger.addEventListener('mousedown',  handleFullScreenStart);
             splashTrigger.addEventListener('touchstart', handleFullScreenStart, { passive: false });
 
-            // Scratch-start слухаємо на всьому контейнері
             gameContainer.addEventListener('mousedown',  handleScratchStart);
             gameContainer.addEventListener('touchstart', handleScratchStart, { passive: false });
 
@@ -495,11 +483,9 @@
             window.addEventListener('mouseup',    handleEnd);
             window.addEventListener('touchend',   handleEnd);
 
-            // Перемальовуємо canvas при ресайзі вікна (orientation change, etc.)
             window.addEventListener('resize', onResize);
         }
 
-        // --- Малюємо текстуру в canvas ---
         function resizeCanvas() {
             const rect = scratchZone.getBoundingClientRect();
             canvas.width  = rect.width;
@@ -507,20 +493,15 @@
             ctx.drawImage(cardTexture, 0, 0, canvas.width, canvas.height);
         }
 
-        // --- При ресайзі — перемальовуємо, але тільки якщо ще не вигравали ---
         function onResize() {
             if (state === 'WIN') return;
             resizeCanvas();
-            // pCanvas підганяємо до нових розмірів
             const gcRect = gameContainer.getBoundingClientRect();
             pCanvas.width  = gcRect.width;
             pCanvas.height = gcRect.height;
         }
 
-        // ==========================================================
-        //  Хелпер: отримати координати ВІДНОСНО game-container
-        //  Використовується для feather і для scratch
-        // ==========================================================
+        
         function getRelativeCoords(e) {
             const gcRect  = gameContainer.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -533,9 +514,6 @@
             };
         }
 
-        // ==========================================================
-        //  UNLOCK AUDIO
-        // ==========================================================
         function unlockAudioContext() {
             try {
                 const ac  = new (window.AudioContext || window.webkitAudioContext)();
@@ -554,9 +532,6 @@
             });
         }
 
-        // ==========================================================
-        //  SPLASH → SCRATCH
-        // ==========================================================
         function handleFullScreenStart(e) {
             if (state !== 'SPLASH') return;
             e.preventDefault();
@@ -588,9 +563,6 @@
             featherContainer.style.display  = 'flex';
         }
 
-        // ==========================================================
-        //  SCRATCH START
-        // ==========================================================
         function handleScratchStart(e) {
             if (state !== 'SCRATCH') return;
 
@@ -612,9 +584,6 @@
             }
         }
 
-        // ==========================================================
-        //  SCRATCH MOVE
-        // ==========================================================
         function updatePos(e) {
             const canvasRect = canvas.getBoundingClientRect();
             const clientX    = e.touches ? e.touches[0].clientX : e.clientX;
@@ -622,7 +591,6 @@
             lastX = clientX - canvasRect.left;
             lastY = clientY - canvasRect.top;
 
-            // Feather — відносно game-container
             const rel = getRelativeCoords(e);
             moveFeather(rel.x, rel.y);
         }
@@ -637,7 +605,6 @@
             const x = clientX - canvasRect.left;
             const y = clientY - canvasRect.top;
 
-            // Рухаємо feather відносно контейнера
             const rel = getRelativeCoords(e);
             moveFeather(rel.x, rel.y);
 
@@ -672,7 +639,6 @@
             if (isDrawing) {
                 isDrawing = false;
 
-                // Повертаємо feather у дефолтну позицію (плавно)
                 featherContainer.style.transition = 'top 0.4s ease, left 0.4s ease';
                 featherContainer.style.top  = '73%';
                 featherContainer.style.left = '50%';
@@ -682,16 +648,13 @@
             }
         }
 
-        // Переміщення feather — ВІДНОСНО game-container (не viewport!)
         function moveFeather(relX, relY) {
             featherContainer.style.display = 'flex';
             featherContainer.style.left    = relX + 'px';
             featherContainer.style.top     = relY + 'px';
         }
 
-        // ==========================================================
-        //  ПЕРЕВІРКА ПРОГРЕСУ СКРЕТЧУ
-        // ==========================================================
+        
         function checkProgress() {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const pixels    = imageData.data;
@@ -709,9 +672,7 @@
             }
         }
 
-        // ==========================================================
-        //  SHATTER + WIN
-        // ==========================================================
+
         function triggerShatter() {
             if (state === 'WIN') return;
             state = 'WIN';
@@ -740,7 +701,6 @@
 
             const gameRect = gameContainer.getBoundingClientRect();
             const zoneRect = scratchZone.getBoundingClientRect();
-            // Координати зони ВІДНОСНО game-container
             const zoneLeft = zoneRect.left  - gameRect.left;
             const zoneTop  = zoneRect.top   - gameRect.top;
             const zoneW    = zoneRect.width;
@@ -750,7 +710,6 @@
             const tw   = zoneW / COLS;
             const th   = zoneH / ROWS;
 
-            // pCanvas прив'язуємо до game-container
             pCanvas.width  = gameRect.width;
             pCanvas.height = gameRect.height;
             pCanvas.style.zIndex = 40;
@@ -887,9 +846,7 @@
             requestAnimationFrame(animateShatter);
         }
 
-        // ==========================================================
-        //  ТАЙМЕР
-        // ==========================================================
+        
         let timeLeft      = config.timerDuration;
         let isSecondState = false;
 
