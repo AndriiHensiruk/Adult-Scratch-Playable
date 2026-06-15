@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Adult Scratch Playable</title>
+    <title>Adult Scratch Playable_Comics</title>
     <style>
         * {
             box-sizing: border-box;
@@ -205,7 +205,7 @@
         #win-bubble {
             width: 85%;
             animation: bubblePop 1.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin-bottom: 5px;
+            margin-bottom: 25px;
         }
 
         @keyframes bubblePop {
@@ -295,7 +295,6 @@
             opacity: 0.45;
         }
 
-
         #desktop-hint {
             display: none;
             position: fixed;
@@ -323,7 +322,6 @@
         }
 
         @media (min-width: 600px) and (min-aspect-ratio: 9/16) {
-            /* Показуємо підказку тільки якщо є місце збоку */
             #desktop-hint { display: flex; }
         }
     </style>
@@ -356,7 +354,7 @@
 
         <div id="end-card">
             <img id="win-bubble" src="assets/win_bubble.png" alt="Win Action">
-            <a id="cta-link" href="https://first-link.com" target="_self">
+            <a id="cta-link" href="https://honeytoon.com/comic/teach-me-first/1" target="_self">
                 <img id="cta-button" src="assets/btn_read_now.png" alt="Action Button">
             </a>
             <div id="timer">Access expires in 00:59s</div>
@@ -389,11 +387,8 @@
             scratchVolume   : 0.4,
             winVolume       : 0.8,
             btnImg1         : 'assets/btn_read_now.png',
-            btnImg2         : 'assets/btn_read_now.png',
             winBubbleImg1   : 'assets/win_bubble.png',
-            winBubbleImg2   : 'assets/win_bubble2.png',
-            link1           : 'https://honeytoon.com/comic/teach-me-first/1',
-            link2           : 'https://honeytoon.com/comic-video/teach-me-first?n=1'
+            link1           : 'https://honeytoon.com/comic/teach-me-first/1'
         };
 
         let state = 'SPLASH';
@@ -501,7 +496,6 @@
             pCanvas.height = gcRect.height;
         }
 
-        
         function getRelativeCoords(e) {
             const gcRect  = gameContainer.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -570,7 +564,6 @@
             const clientX    = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY    = e.touches ? e.touches[0].clientY : e.clientY;
 
-            // Починаємо скретч тільки якщо клік/тап потрапив у canvas
             if (clientX >= canvasRect.left && clientX <= canvasRect.right &&
                 clientY >= canvasRect.top  && clientY <= canvasRect.bottom) {
 
@@ -654,7 +647,6 @@
             featherContainer.style.top     = relY + 'px';
         }
 
-        
         function checkProgress() {
             if (isDelaying || shatterTriggered) return;
 
@@ -685,7 +677,6 @@
             }
         }
 
-
         function triggerShatter() {
             if (state === 'WIN') return;
             state = 'WIN';
@@ -705,7 +696,6 @@
                 tryPlay(winSound);
             }
 
-            // Знімок поточного стану canvas для анімації розбиття
             const snapshot = document.createElement('canvas');
             snapshot.width  = canvas.width;
             snapshot.height = canvas.height;
@@ -728,7 +718,6 @@
             pCanvas.style.zIndex = 40;
 
             const pieces = [];
-
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     const pc = document.createElement('canvas');
@@ -750,7 +739,6 @@
                     const dy     = startY - cy;
                     const dist   = Math.sqrt(dx * dx + dy * dy) || 1;
                     const speed  = 6 + Math.random() * 10;
-
                     pieces.push({
                         canvas : pc,
                         x      : startX,
@@ -781,7 +769,6 @@
                     }
                 }
             }
-
             const confettiColors = ['#FF5252','#FF4081','#7C4DFF','#40C4FF','#69F0AE','#FFFF00'];
             for (let i = 0; i < 70; i++) {
                 particles.push({
@@ -798,7 +785,6 @@
 
             let startTime = null;
             const DURATION = 350;
-
             function animateShatter(ts) {
                 if (!startTime) startTime = ts;
                 const elapsed  = ts - startTime;
@@ -855,33 +841,22 @@
                     startTimer();
                 }
             }
-
             requestAnimationFrame(animateShatter);
         }
 
-        
-        let timeLeft      = config.timerDuration;
-        let isSecondState = false;
+        let timeLeft = config.timerDuration;
 
         function startTimer() {
             setInterval(() => {
                 timeLeft--;
                 if (timeLeft < 0) {
-                    timeLeft      = config.timerDuration;
-                    isSecondState = !isSecondState;
-
-                    ctaButton.src = isSecondState ? config.btnImg2 : config.btnImg1;
-                    winBubble.src = isSecondState ? config.winBubbleImg2 : config.winBubbleImg1;
-                    ctaLink.href  = isSecondState ? config.link2 : config.link1;
+                    timeLeft = config.timerDuration;
                 }
                 const s = timeLeft < 10 ? '0' + timeLeft : timeLeft;
                 timerLabel.innerText = `Access expires in 00:${s}s`;
             }, 1000);
         }
 
-        // ==========================================================
-        //  КОНФЕТІ (end-card)
-        // ==========================================================
         function startParticles() {
             const gcRect   = gameContainer.getBoundingClientRect();
             pCanvas.width  = gcRect.width;
