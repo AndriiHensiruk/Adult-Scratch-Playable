@@ -204,7 +204,7 @@
 
         #win-bubble {
             width: 85%;
-            animation: bubblePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: bubblePop 1.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             margin-bottom: 5px;
         }
 
@@ -330,7 +330,6 @@
 </head>
 <body>
 
-    <!-- Декоративні бічні підписи на широких екранах -->
     <div id="desktop-hint" aria-hidden="true">
         <span class="side-hint">Scratch &amp; Win</span>
         <span class="side-hint">Scratch &amp; Win</span>
@@ -383,7 +382,7 @@
     <script>
         const config = {
             requiredPercent : 45,
-            brushSize       : 20,
+            brushSize       : 15,
             timerDuration   : 59,
             videoSpeed      : 0.5,
             musicVolume     : 0.15,
@@ -398,7 +397,7 @@
         };
 
         let state = 'SPLASH';
-
+        
         const gameContainer     = document.getElementById('game-container');
         const splashTrigger     = document.getElementById('splash-trigger');
         const girlVideo         = document.getElementById('girl-video');
@@ -438,6 +437,7 @@
         let isScratchSoundPlaying = false;
         let particles = [];
         let shatterTriggered = false;
+        let isDelaying = false;
 
         bgSound.muted     = true;
         bgMusic.muted     = true;
@@ -656,6 +656,8 @@
 
         
         function checkProgress() {
+            if (isDelaying || shatterTriggered) return;
+
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const pixels    = imageData.data;
             let clear = 0;
@@ -666,9 +668,20 @@
 
             const percent = (clear / (pixels.length / 40)) * 100;
 
-            if (!shatterTriggered && percent > config.requiredPercent) {
-                shatterTriggered = true;
-                triggerShatter();
+            if (percent > config.requiredPercent) {
+                isDelaying = true; 
+                isDrawing = false; 
+                
+                featherContainer.style.display = 'none';
+                if (isScratchSoundPlaying) {
+                    scratchSound.pause();
+                    isScratchSoundPlaying = false;
+                }
+
+                setTimeout(() => {
+                    shatterTriggered = true;
+                    triggerShatter();
+                }, 1000); 
             }
         }
 
